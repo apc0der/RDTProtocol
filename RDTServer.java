@@ -34,10 +34,8 @@ public class RDTServer {
 }
 
 class Handler extends Thread {
-    private DatagramPacket pkt;
-    private DatagramSocket skt;
-    private String[] msg;
-    private int seqNum;
+    private final DatagramPacket pkt;
+    private final DatagramSocket skt;
 
 
     public Handler(DatagramPacket p, DatagramSocket s) {
@@ -59,12 +57,12 @@ class Handler extends Thread {
             if (!RDTServer.cliSeqNum.containsKey(cliName)) {
                 RDTServer.cliSeqNum.put(cliName, 0);
             }
-            seqNum = RDTServer.cliSeqNum.get(cliName);
+            int seqNum = RDTServer.cliSeqNum.get(cliName);
 
-            msg = new String(pkt.getData()).trim().split(" "); // parse the message
+            String[] msg = new String(pkt.getData()).trim().split(" "); // parse the message
             System.out.println("> Server received message from " + cliName + ": " + String.join(" ", msg));
 
-            if (msg.length == 3) { // gotta be length 3
+            if (msg.length == 3) { // has to be length 3
                 if (msg[0].equals("DATA")) { // needs to start with DATA
                     try {
                         if (Integer.parseInt(msg[1]) == seqNum) { // needs to be an int
