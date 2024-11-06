@@ -3,7 +3,7 @@ import java.net.*;
 
 public class RDTClient {
     public static int max = 0;
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         if (args.length != 3) { // correct args
             System.err.println("Correct usage: java RDTClient <hostName> <portNumber> <MAXSEQ#>");
             System.exit(0);
@@ -13,7 +13,7 @@ public class RDTClient {
         max = Integer.parseInt(args[2]); // maxseq
         try {
             DatagramSocket cliSock = new DatagramSocket(); // new socket
-            String sentence = null; // variable for msgs
+            String sentence; // variable for msgs
             BufferedReader io = new BufferedReader(new InputStreamReader(System.in));
             while (true) {
                 sentence = io.readLine(); // get a msg
@@ -21,7 +21,7 @@ public class RDTClient {
                 while (i < sentence.length()) { // while there are still chars to send
                     byte[] sendBuf = new byte[1024]; // send buffer
                     byte[] rcvBuf = new byte [1024]; // receive buffer
-                    String toSend = "DATA " + Integer.toString(i%max) + " " + sentence.charAt(i); // make msg
+                    String toSend = "DATA " + i%max + " " + sentence.charAt(i); // make msg
                     sendBuf = toSend.getBytes(); // convert to bytes
                     DatagramPacket sendPkt = new DatagramPacket(sendBuf, sendBuf.length, InetAddress.getByName(h), pNum);
                     cliSock.send(sendPkt); // build and send packet
@@ -36,7 +36,7 @@ public class RDTClient {
                         String[] servMsg = new String(rcvPkt.getData()).trim().split(" ");
                         if (servMsg.length == 2) {
                             try {
-                                if (servMsg[0].equals("ACK") && Integer.parseInt(servMsg[1]) == i%max) {} else {
+                                if (!(servMsg[0].equals("ACK") && Integer.parseInt(servMsg[1]) == i%max)) {
                                     cliSock.setSoTimeout(Math.max(5000 - lapse, 0));
                                     cliSock.receive(rcvPkt);
                                 }
