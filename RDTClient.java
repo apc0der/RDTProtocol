@@ -28,24 +28,27 @@ public class RDTClient {
                     DatagramPacket rcvPkt = new DatagramPacket(rcvBuf, rcvBuf.length); // prepare receive packet
 
                     try {
-                        long startTime = System.currentTimeMillis();
-                        cliSock.setSoTimeout(5000);
-                        cliSock.receive((rcvPkt));
-                        long curTime = System.currentTimeMillis();
+                        long startTime = System.currentTimeMillis(); // current time
+                        cliSock.setSoTimeout(5000); // server message lost timeout
+                        cliSock.receive((rcvPkt)); // receive the packet
+                        long curTime = System.currentTimeMillis(); // time until packet received
                         int lapse = (int) (curTime - startTime);
                         String[] servMsg = new String(rcvPkt.getData()).trim().split(" ");
-                        if (servMsg.length == 2) {
+                        if (servMsg.length == 2) { // make sure message is of proper format
                             try {
-                                if (!(servMsg[0].equals("ACK") && Integer.parseInt(servMsg[1]) == i%max)) {
+                                if (!(servMsg[0].equals("ACK") && Integer.parseInt(servMsg[1]) == i%max)) { // if wrong kind of message, make a new timer so that total elapsed time is 5 seconds
                                     cliSock.setSoTimeout(Math.max(5000 - lapse, 0));
                                     cliSock.receive(rcvPkt);
+                                } else {
+                                    System.out.println("Client received proper ACK for character '" + sentence.charAt(i) + "'."); // logging good ACK
                                 }
-                            } catch (Exception e){
+                            } catch (Exception e){ // same here, if the parse integer couldn't occur
                                 cliSock.setSoTimeout(Math.max(5000 - lapse, 0));
                                 cliSock.receive(rcvPkt);
                             }
                         }
                     } catch (SocketTimeoutException e) {
+                        System.out.println("Client re-attempting to send character '" + sentence.charAt(i) + "'.");
                         i -= 1; // decrement, so increment later is the same as resend
                     } catch (SocketException e) {
                         System.err.println("Socket messed up.");
